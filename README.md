@@ -57,7 +57,8 @@ Don’t deploy your code to production directly from Visual Studio Code. The dep
 
 Deploy your changes to production using [packaging](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_dev2gp.htm) or by [converting your source](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_force_source.htm#cli_reference_convert) into metadata format and using the [metadata deploy command](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference_force_mdapi.htm#cli_reference_deploy).
 
-## ApexRecipes 
-Kevin Poorman Live Code Videos.
+## ApexRecipes
+
+Built following Kevin Poorman Live Code Videos.
 
 [Dec 5th, 2019 - CodeLive with Salesforce Developers: Building Apex Recipes](https://trailhead.salesforce.com/live/videos/a2r3k000001WFId/codelive-with-salesforce-developers-building-apex-recipes)
