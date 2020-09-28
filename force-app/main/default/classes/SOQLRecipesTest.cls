@@ -30,10 +30,14 @@ private class SOQLRecipesTest {
       testAccounts.clear();
     }
 
-    System.assertEquals([SELECT id FROM Account].size(), 3000, 'expeted to have created');
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      3000,
+      'expeted to have created'
+    );
     Test.startTest();
     Integer count = SOQLRecipes.QueryMassiveNummberOfRecordsReturningCount();
     Test.stopTest(); // force all async jobs to complete
-    System.assertEquals(count, 3000, 'Expected found 3k records')
+    System.assertEquals(count, 3000, 'Expected found 3k records');
   }
 }
