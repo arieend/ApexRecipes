@@ -59,4 +59,4 @@ Deploy your changes to production using [packaging](https://developer.salesforce
 
 ## ApexRecipes 
 Kevin Poorman Live Code 
-[Dec 5th, 2019 CodeLive with Salesforce Developers: Building Apex Recipes](https://trailhead.salesforce.com/live/videos/a2r3k000001WFId/codelive-with-salesforce-developers-building-apex-recipes)
+[Dec 5th, 2019 - CodeLive with Salesforce Developers: Building Apex Recipes](https://trailhead.salesforce.com/live/videos/a2r3k000001WFId/codelive-with-salesforce-developers-building-apex-recipes)
