@@ -1,7 +1,7 @@
 public with sharing class SOQLRecipes {
   public static List<Account> querySingleObject() {
     List<Account> accounts = [
-      SELECT Name, MailingStreet, MailingCity
+      SELECT Name, ShippingStreet, ShippingCity
       FROM Account
     ];
     return accounts;
@@ -13,12 +13,12 @@ public with sharing class SOQLRecipes {
     }
     return count;
   }
-  public static List<Account> getFilteredLis() {
+  public static List<Account> getFilteredList() {
     // All records with a mail address of the UK
     List<Account> accounts = [
       SELECT Name
       FROM Account
-      WHERE MailingCountry = 'UK'
+      WHERE ShippingCountry = 'UK'
     ];
     return accounts;
   }
@@ -27,8 +27,8 @@ public with sharing class SOQLRecipes {
       SELECT Name
       FROM Account
       WHERE
-        MailingCountry = 'US'
-        AND MailingState = 'Indiana'
+        ShippingCountry = 'US'
+        AND ShippingState = 'Indiana'
         AND (Industry = 'Fast Food - made whole'
         OR Industry = 'Slow Food - Made quickly')
     ];
@@ -47,9 +47,9 @@ public with sharing class SOQLRecipes {
   }
   public static List<Account> getAccountsInState(String state) {
     // getAccountsInState('Alabama');
-    return [SELECT Name FROM Account WHERE mailingState = :state];
+    return [SELECT Name FROM Account WHERE ShippingState = :state];
   }
-  public static List<Account> getSecondTenAccount() {
+  public static List<Account> getSecond10Account() {
     return [SELECT Name FROM Account ORDER BY Industry DESC LIMIT 10 OFFSET 10];
   }
   // Parent to child relationship
@@ -57,25 +57,25 @@ public with sharing class SOQLRecipes {
     return [SELECT Name, (SELECT Name FROM Contacts) FROM Account];
   }
   // Child to parent query
-  public static List<Account> getParentDetailsForChild() {
+  public static List<Contact> getParentDetailsForChild() {
     return [
-      SELECT Id, Name, Email, account.Name, account.mailingState
-      FROM Contacts
-      WHERE account.mailingState = 'Kansas'
+      SELECT Id, Name, Email, account.Name, account.ShippingState
+      FROM Contact
+      WHERE account.ShippingState = 'Kansas'
     ];
   }
   // Junction objects are the child of two master details
-  public static List<Junction__c> getDetailsFromBothParents() {
-    return [SELECT ID, parent1.name, parent2.name FROM Junction__c];
-  }
-  public static Double getSumOfOpportunities(ID accountId) {
-    // given an accountId calculate the sum of opportunitie values
-    // get opportunitie and sum them!
-    AggregateResult[] groupedResults = [
-      SELECT SUM(Amount) total
-      FROM Opportunity
-      WHERE AccountId = :accountId
-    ];
-    return groupedResults[0].total;
-  }
+  // public static List<Junction__c> getDetailsFromBothParents() {
+  //   return [SELECT ID, parent1.name, parent2.name FROM Junction__c];
+  // }
+  // public static Double getSumOfOpportunities(ID accountId) {
+  //   // given an accountId calculate the sum of opportunitie values
+  //   // get opportunitie and sum them!
+  //   AggregateResult[] groupedResults = [
+  //     SELECT SUM(Amount) total
+  //     FROM Opportunity
+  //     WHERE AccountId = :accountId
+  //   ];
+  //   return (double) groupedResults[0].get('total');
+  // }
 }

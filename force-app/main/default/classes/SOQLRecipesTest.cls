@@ -1,13 +1,30 @@
 @isTest
 private class SOQLRecipesTest {
-  @IsTest
-  static void testQuerySingleObject() {
-    Account accr = new Account(
-      Name = 'The Test',
-      MailingStreet = '123 Sessame St.',
-      MailingCity = 'New Jersey'
+  private static void createAccount(Boolean setCountry, String country) {
+    insert genAccountWithOptions(setCountry, country);
+  }
+  private static Account genAccountWithOptions(
+    Boolean setCountry,
+    String country
+  ) {
+    Account acct = new Account(
+      Name = 'The Test Account of Awesomeness' + Crypto.getRandomInteger(),
+      ShippingStreet = '123 Sessame St.',
+      ShippingCity = 'Wehawkin'
     );
-    insert acct;
+    if (setCountry) {
+      acct.ShippingCountry = country;
+    }
+    return acct;
+  }
+  @IsTest
+  static void testSipmleQuerySingleObject() {
+    createAccount(false, '');
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      1,
+      'expected 1 record'
+    );
     Test.startTest();
     List<Account> testAccounts = SOQLRecipes.querySingleObject();
     Test.stopTest();
@@ -16,15 +33,15 @@ private class SOQLRecipesTest {
       1,
       'We found more then 1 having created exactly 1'
     );
-    System.assert(testAccounts[1].Name.contains('Test'));
+    System.assert(testAccounts[0].Name.contains('Awesomeness'));
   }
   @IsTest
   static void testCountOfLargeDataVolums() {
     // create test data
     List<Account> testAccounts = new List<Account>();
-    for (int x = 0; x <= 1; x++) {
-      for (int i = 0; i < 15000; i++) {
-        testAccounts.add(new Account(Name = 'TestAccount' + i + 'GROUP ' + x));
+    for (Integer x = 0; x <= 1; x++) {
+      for (Integer i = 0; i < 1500; i++) {
+        testAccounts.add(genAccountWithOptions(false, ''));
       }
       insert testAccounts;
       testAccounts.clear();
@@ -39,5 +56,40 @@ private class SOQLRecipesTest {
     Integer count = SOQLRecipes.QueryMassiveNummberOfRecordsReturningCount();
     Test.stopTest(); // force all async jobs to complete
     System.assertEquals(count, 3000, 'Expected found 3k records');
+  }
+  @IsTest
+  static void testQueryWithFilterNegativeNoMatch() {
+    createAccount(false, '');
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      1,
+      'expected 1 record'
+    );
+
+    Test.startTest();
+    List<Account> testAccounts = SOQLRecipes.getFilteredList();
+    Test.stopTest();
+    System.assertEquals(
+      testAccounts.size(),
+      0,
+      'we expected no record be found'
+    );
+  }
+  @IsTest
+  static void testQueryWithFilterPositive() {
+    createAccount(true, 'UK');
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      1,
+      'expected 1 record'
+    );
+    Test.startTest();
+    List<Account> testAccounts = SOQLRecipes.getFilteredList();
+    Test.stopTest();
+    System.assertEquals(
+      testAccounts.size(),
+      1,
+      'we expected 1 record be found'
+    );
   }
 }
