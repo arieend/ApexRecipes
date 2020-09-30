@@ -6,15 +6,24 @@ private class SOQLRecipesTest {
   private static void createAccounts(
     Boolean setCountry,
     String country,
-    Integer totalCnt
+    Integer numberOfAccounts
+  ) {
+    insert genXnumberOfAccountWithOptions(
+      setCountry,
+      country,
+      numberOfAccounts
+    );
+  }
+  private static List<Account> genXnumberOfAccountWithOptions(
+    Boolean setCountry,
+    String country,
+    Integer numberOfAccounts
   ) {
     List<Account> acctList = new List<Account>();
-    for (Integer i = 0; i < totalCnt; i++) {
+    for (Integer i = 0; i < numberOfAccounts; i++) {
       acctList.add(genAccountWithOptions(setCountry, country));
     }
-    if (acctList.size() > 0) {
-      insert acctList;
-    }
+    return acctList;
   }
   private static Account genAccountWithOptions(
     Boolean setCountry,
@@ -29,6 +38,13 @@ private class SOQLRecipesTest {
       acct.ShippingCountry = country;
     }
     return acct;
+  }
+  private static Contact genContactForAccount(ID acctID) {
+    return new Contact(
+      AccountID = acctID,
+      LastName = 'Spectecular',
+      FirstName = String.valueOf(Crypto.getRandomInteger())
+    );
   }
   @IsTest
   static void testSipmleQuerySingleObject() {
@@ -170,7 +186,10 @@ private class SOQLRecipesTest {
     System.assertEquals(
       expectedNumOfRecords,
       accounts.size(),
-      'expected ' +  expectedNumOfRecords + ' records after inserting ' + numOfRecords
+      'expected ' +
+      expectedNumOfRecords +
+      ' records after inserting ' +
+      numOfRecords
     );
   }
   @IsTest
@@ -196,6 +215,216 @@ private class SOQLRecipesTest {
       expectedNumOfRecords +
       ' records after inserting ' +
       numOfRecords
+    );
+  }
+  @IsTest
+  static void testDynamicLimitClause() {
+    Integer numOfRecords = 8;
+    Integer expectedNumOfRecords = 3;
+    createAccounts(true, 'US', numOfRecords);
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      numOfRecords,
+      'expected ' +
+      numOfRecords +
+      ' record'
+    );
+
+    Test.startTest();
+    List<Account> accounts = SOQLRecipes.getFirstXResult(expectedNumOfRecords);
+    Test.stopTest();
+    System.assertEquals(
+      expectedNumOfRecords,
+      accounts.size(),
+      'expected ' +
+      expectedNumOfRecords +
+      ' records after inserting ' +
+      numOfRecords
+    );
+  }
+  @IsTest
+  static void testGetAccountfilterByState() {
+    Integer numOfRecords = 3;
+    Integer expectedNumOfRecords = 3;
+    List<Account> toInsert = genXnumberOfAccountWithOptions(true, 'US', 3);
+    for (Account acct : toInsert) {
+      acct.ShippingState = 'TX';
+    }
+    insert toInsert;
+
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      numOfRecords,
+      'expected ' +
+      numOfRecords +
+      ' record'
+    );
+    TeSt.startTest();
+    List<Account> accounts = SOQLRecipes.getAccountsInState('TX');
+    List<Account> accountsWA = SOQLRecipes.getAccountsInState('WA');
+    Test.stopTest();
+    System.assertEquals(
+      expectedNumOfRecords,
+      accounts.size(),
+      'expected ' +
+      expectedNumOfRecords +
+      ' records after inserting ' +
+      numOfRecords +
+      ' for TX state'
+    );
+    System.assertNotEquals(
+      expectedNumOfRecords,
+      accountsWA.size(),
+      'expected 0 records after inserting ' +
+      numOfRecords +
+      ' for TX state'
+    );
+  }
+  @IsTest
+  static void testGetRecords11through20() {
+    Integer numOfRecords = 25;
+    Integer expectedNumOfRecords = 10;
+    createAccounts(true, 'US', numOfRecords);
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      numOfRecords,
+      'expected ' +
+      numOfRecords +
+      ' record'
+    );
+    Test.startTest();
+    List<Account> accounts = SOQLRecipes.getSecond10Account();
+    Test.stopTest();
+    System.assertEquals(
+      expectedNumOfRecords,
+      accounts.size(),
+      'expected ' +
+      expectedNumOfRecords +
+      ' records after inserting ' +
+      numOfRecords
+    );
+  }
+  @IsTest
+  static void testGetRecords11through15() {
+    Integer numOfRecords = 15;
+    Integer expectedNumOfRecords = 5;
+    createAccounts(true, 'US', numOfRecords);
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      numOfRecords,
+      'expected ' +
+      numOfRecords +
+      ' record'
+    );
+    Test.startTest();
+    List<Account> accounts = SOQLRecipes.getSecond10Account();
+    Test.stopTest();
+    System.assertEquals(
+      expectedNumOfRecords,
+      accounts.size(),
+      'expected ' +
+      expectedNumOfRecords +
+      ' records after inserting ' +
+      numOfRecords
+    );
+  }
+  @IsTest
+  static void testGetContactsAndAccounts() {
+    Integer numOfRecords = 3;
+    Integer expectedNumOfRecords = 3;
+    List<Account> accounts = genXnumberOfAccountWithOptions(
+      true,
+      'US',
+      numOfRecords
+    );
+    insert accounts;
+    List<Contact> contacts = new List<Contact>();
+    for (Account account : accounts) {
+      for (Integer i = 0; i < 5; i++) {
+        contacts.add(genContactForAccount(account.Id));
+      }
+    }
+    insert contacts;
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      numOfRecords,
+      'expected ' +
+      numOfRecords +
+      ' record'
+    );
+    System.assertEquals(
+      [SELECT id FROM Contact].size(),
+      (numOfRecords * 5),
+      'expected ' +
+      (numOfRecords * 5) +
+      ' record'
+    );
+    Test.startTest();
+    List<Account> results = SOQLRecipes.getContactsAndAccounts();
+    Test.stopTest();
+    System.assertEquals(
+      expectedNumOfRecords,
+      results.size(),
+      'expected ' +
+      expectedNumOfRecords +
+      ' records after inserting ' +
+      numOfRecords
+    );
+    Map<ID, Account> accountMap = new Map<ID, Account>(accounts);
+    for (Account acct : results) {
+      List<Contact> cts = acct.getSObjects('Contacts');
+      // System.assertEquals(1, cts.size(), 'Expected to find a single contact');
+      // System.assertNotEquals( null, cts[0].Id, 'Expected contact Id not to be null')
+      System.assertEquals(5, cts.size(), 'Expected to find a single contact');
+      for (Contact ct : cts) {
+        System.assertNotEquals(null, ct.Id, 'Expected the Id not to be null');
+        System.assert(
+          accountMap.keySet().contains(ct.AccountId),
+          'Expected that accountIds are known to Contatc'
+        );
+      }
+    }
+  }
+  @IsTest
+  static void testGetAccountInfoThenQueringContact() {
+    Integer numOfRecords = 1;
+    Integer expectedNumOfRecords = 1;
+    List<Account> accounts = genXnumberOfAccountWithOptions(
+      true,
+      'US',
+      numOfRecords
+    );
+    for (Account acct : accounts) {
+      acct.ShippingState = 'Kansas';
+    }
+    insert accounts;
+    List<Contact> contacts = new List<Contact>();
+    for (Account account : accounts) {
+      contacts.add(genContactForAccount(account.Id));
+    }
+    insert contacts;
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      numOfRecords,
+      'expected ' +
+      numOfRecords +
+      ' record'
+    );
+    System.assertEquals(
+      [SELECT id FROM Contact].size(),
+      numOfRecords,
+      'expected ' +
+      numOfRecords +
+      ' record'
+    );
+    Test.startTest();
+    List<Contact> cts = SOQLRecipes.getParentDetailsForChild();
+    Test.stopTest();
+    System.assertEquals(1, cts.size(), 'Expected to find a single contact');
+    System.assertNotEquals(
+      null,
+      cts[0].account.name,
+      'Expected account name to be populated'
     );
   }
 }

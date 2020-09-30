@@ -54,7 +54,7 @@ public with sharing class SOQLRecipes {
   }
   // Parent to child relationship
   public static List<Account> getContactsAndAccounts() {
-    return [SELECT Name, (SELECT Name FROM Contacts) FROM Account];
+    return [SELECT Name, (SELECT Name, AccountId FROM Contacts) FROM Account];
   }
   // Child to parent query
   public static List<Contact> getParentDetailsForChild() {
@@ -65,17 +65,17 @@ public with sharing class SOQLRecipes {
     ];
   }
   // Junction objects are the child of two master details
-  // public static List<Junction__c> getDetailsFromBothParents() {
-  //   return [SELECT ID, parent1.name, parent2.name FROM Junction__c];
-  // }
-  // public static Double getSumOfOpportunities(ID accountId) {
-  //   // given an accountId calculate the sum of opportunitie values
-  //   // get opportunitie and sum them!
-  //   AggregateResult[] groupedResults = [
-  //     SELECT SUM(Amount) total
-  //     FROM Opportunity
-  //     WHERE AccountId = :accountId
-  //   ];
-  //   return (double) groupedResults[0].get('total');
-  // }
+  public static List<Junction__c> getDetailsFromBothParents() {
+    return [SELECT ID, parent1__r.name, parent2__r.name FROM Junction__c];
+  }
+  public static Double getSumOfOpportunities(ID accountId) {
+    // given an accountId calculate the sum of opportunitie values
+    // get opportunitie and sum them!
+    AggregateResult[] groupedResults = [
+      SELECT SUM(Amount) total
+      FROM Opportunity
+      WHERE AccountId = :accountId
+    ];
+    return (double) groupedResults[0].get('total');
+  }
 }
