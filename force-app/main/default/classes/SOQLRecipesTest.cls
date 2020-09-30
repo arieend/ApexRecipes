@@ -3,6 +3,19 @@ private class SOQLRecipesTest {
   private static void createAccount(Boolean setCountry, String country) {
     insert genAccountWithOptions(setCountry, country);
   }
+  private static void createAccounts(
+    Boolean setCountry,
+    String country,
+    Integer totalCnt
+  ) {
+    List<Account> acctList = new List<Account>();
+    for (Integer i = 0; i < totalCnt; i++) {
+      acctList.add(genAccountWithOptions(setCountry, country));
+    }
+    if (acctList.size() > 0) {
+      insert acctList;
+    }
+  }
   private static Account genAccountWithOptions(
     Boolean setCountry,
     String country
@@ -137,5 +150,23 @@ private class SOQLRecipesTest {
     }
     System.assertEquals(positiveCnt, 2, 'Expected 2 positive results');
     System.assertEquals(negativeCnt, 2, 'Expected 2 negative results');
+  }
+  @IsTest
+  static void testLimitClause() {
+    createAccounts(true, 'US', 15);
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      15,
+      'expected 15 record'
+    );
+
+    Test.startTest();
+    List<Account> accounts = SOQLRecipes.getSpecificNumberOfResults();
+    Test.stopTest();
+    System.assertEquals(
+      10,
+      accounts.size(),
+      'expected 10 records after insertomg 15'
+    );
   }
 }
