@@ -92,4 +92,51 @@ private class SOQLRecipesTest {
       'we expected 1 record be found'
     );
   }
+  @IsTest
+  static void testComplexFilterOmnibus() {
+    // Prepare data
+    Map<Account, Boolean> testCase = new Map<Account, Boolean>();
+    testCase.put(genAccountWithOptions(true, 'US'), false);
+    testCase.put(genAccountWithOptions(true, 'CA'), false);
+    Account positiveCase1 = genAccountWithOptions(true, 'US');
+    positiveCase1.ShippingState = 'Indiana';
+    positiveCase1.Industry = 'Fast Food - made whole';
+    Account positiveCase2 = genAccountWithOptions(true, 'US');
+    positiveCase2.ShippingState = 'Indiana';
+    positiveCase2.Industry = 'Slow Food - Made quickly';
+    testCase.put(positiveCase1, true);
+    testCase.put(positiveCase2, true);
+
+    insert (new List<Account>(testCase.keySet())).deepClone();
+
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      4,
+      'expected 4 record'
+    );
+    // Test
+    Test.startTest();
+    List<Account> acctList = SOQLRecipes.getComplexFilteredList();
+    Test.stopTest();
+    // Assertions
+    System.assertEquals(acctList.size(), 2, 'we expected 2 record be found');
+    Set<String> accNames = new Set<String>();
+    for (Account acctItem : acctList) {
+      accNames.add(acctItem.Name);
+    }
+    Integer positiveCnt = 0;
+    Integer negativeCnt = 0;
+    for (Account accKey : testCase.keySet()) {
+      System.debug(accKey + ' ' + testCase.get(accKey));
+      if (testCase.get(accKey) == true) {
+        positiveCnt++;
+        System.assert(accNames.contains(accKey.Name), 'Found postive result');
+      } else {
+        negativeCnt++;
+        System.assert(!accNames.contains(accKey.Name), 'Found negative result');
+      }
+    }
+    System.assertEquals(positiveCnt, 2, 'Expected 2 positive results');
+    System.assertEquals(negativeCnt, 2, 'Expected 2 negative results');
+  }
 }
