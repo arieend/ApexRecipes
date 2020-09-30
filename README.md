@@ -1,4 +1,4 @@
-## Kevin Poorman's Apex Recipes
+# Kevin Poorman's Apex Recipes
 
 Following Kevin Poorman's Trailhead live streams.
 
