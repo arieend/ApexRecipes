@@ -152,21 +152,50 @@ private class SOQLRecipesTest {
     System.assertEquals(negativeCnt, 2, 'Expected 2 negative results');
   }
   @IsTest
-  static void testLimitClause() {
-    createAccounts(true, 'US', 15);
+  static void testLimitClauseMoreThen10Accounts() {
+    Integer numOfRecords = 15;
+    Integer expectedNumOfRecords = 10;
+    createAccounts(true, 'US', numOfRecords);
     System.assertEquals(
       [SELECT id FROM Account].size(),
-      15,
-      'expected 15 record'
+      numOfRecords,
+      'expected ' +
+      numOfRecords +
+      ' record'
     );
 
     Test.startTest();
     List<Account> accounts = SOQLRecipes.getSpecificNumberOfResults();
     Test.stopTest();
     System.assertEquals(
-      10,
+      expectedNumOfRecords,
       accounts.size(),
-      'expected 10 records after insertomg 15'
+      'expected ' +  expectedNumOfRecords + ' records after inserting ' + numOfRecords
+    );
+  }
+  @IsTest
+  static void testLimitClauseLessThen10Accounts() {
+    Integer numOfRecords = 3;
+    Integer expectedNumOfRecords = 3;
+    createAccounts(true, 'US', numOfRecords);
+    System.assertEquals(
+      [SELECT id FROM Account].size(),
+      numOfRecords,
+      'expected ' +
+      numOfRecords +
+      ' record'
+    );
+
+    Test.startTest();
+    List<Account> accounts = SOQLRecipes.getSpecificNumberOfResults();
+    Test.stopTest();
+    System.assertEquals(
+      expectedNumOfRecords,
+      accounts.size(),
+      'expected ' +
+      expectedNumOfRecords +
+      ' records after inserting ' +
+      numOfRecords
     );
   }
 }
