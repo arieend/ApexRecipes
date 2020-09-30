@@ -127,7 +127,6 @@ private class SOQLRecipesTest {
     Integer positiveCnt = 0;
     Integer negativeCnt = 0;
     for (Account accKey : testCase.keySet()) {
-      System.debug(accKey + ' ' + testCase.get(accKey));
       if (testCase.get(accKey) == true) {
         positiveCnt++;
         System.assert(accNames.contains(accKey.Name), 'Found postive result');
