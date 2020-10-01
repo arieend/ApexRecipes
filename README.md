@@ -1,8 +1,9 @@
-## Kevin Poorman's ApexRecipes
+# Kevin Poorman's Apex Recipes
 
 Following Kevin Poorman's Trailhead live streams.
 
 [Dec 5th, 2019 - CodeLive with Salesforce Developers: Building Apex Recipes](https://trailhead.salesforce.com/live/videos/a2r3k000001WFId/codelive-with-salesforce-developers-building-apex-recipes)
+
 [Jan 9th, 2020 - CodeLive with Salesforce Developers: Apex Recipes](https://trailhead.salesforce.com/live/videos/a2r3k000001WFQJ/codelive-with-salesforce-developers-apex-recipes/)
 
 # Salesforce App
