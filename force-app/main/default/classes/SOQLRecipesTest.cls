@@ -1,7 +1,9 @@
 @isTest
 private class SOQLRecipesTest {
-  private static void createAccount(Boolean setCountry, String country) {
-    insert genAccountWithOptions(setCountry, country);
+  private static Account createAccount(Boolean setCountry, String country) {
+    Account account = genAccountWithOptions(setCountry, country);
+    insert account;
+    return account;
   }
   private static void createAccounts(
     Boolean setCountry,
@@ -425,6 +427,59 @@ private class SOQLRecipesTest {
       null,
       cts[0].account.name,
       'Expected account name to be populated'
+    );
+  }
+  @IsTest
+  static void testGetDetailsFromBothParents() {
+    Junction_Demo_1__c jd1 = new Junction_Demo_1__c();
+    Junction_Demo_2__c jd2 = new Junction_Demo_2__c();
+    insert jd1;
+    insert jd2;
+
+    Junction__c junction = new Junction__c(
+      Parent1__c = jd1.id,
+      Parent2__c = jd2.id
+    );
+    insert junction;
+
+    Test.startTest();
+    List<Junction__c> results = SOQLRecipes.getDetailsFromBothParents();
+    Test.stopTest();
+    System.assertNotEquals(
+      null,
+      results[0].parent1__r.name,
+      'Expected parent1\'s name not to be null'
+    );
+    System.assertNotEquals(
+      null,
+      results[0].parent2__r.name,
+      'Expected parent2\'s name not to be null'
+    );
+  }
+  @IsTest
+  static void getSumOfOpportunitiesTest() {
+    Account account = createAccount(true, 'It');
+    List<Opportunity> opps = new List<Opportunity>();
+    Integer length = 5;
+    for (Integer i = 0; i < length; i++) {
+      opps.add(
+        new Opportunity(
+          Name = 'Epic Opportunity' + i,
+          StageName = 'Qualification',
+          accountId = account.id,
+          amount = 1000.00,
+          CloseDate = Date.today().addDays(14)
+        )
+      );
+    }
+    insert opps;
+    Test.startTest();
+    Double total = SOQLRecipes.getSumOfOpportunities(account.Id);
+    Test.stopTest();
+    System.assertEquals(
+      5000.00,
+      total,
+      'Expected amount ofOpportunities is 5000'
     );
   }
 }
