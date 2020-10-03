@@ -12,6 +12,8 @@ Following Kevin Poorman's Trailhead live streams.
 
 [Feb 6th, 2020 - CodeLive with Salesforce Developers](https://trailhead.salesforce.com/live/videos/a2r3k000001WFWq/codelive-with-salesforce-developers/)
 
+[Feb 13th, 2020 - CodeLive with Salesforce Developers](https://trailhead.salesforce.com/live/videos/a2r3k000001WFYN/codelive-with-salesforce-developers/)
+
 # Salesforce App
 
 This guide helps Salesforce developers who are new to Visual Studio Code go from zero to a deployed app using Salesforce Extensions for VS Code and Salesforce CLI.
