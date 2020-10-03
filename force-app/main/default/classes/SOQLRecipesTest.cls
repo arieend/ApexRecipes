@@ -1,3 +1,17 @@
+/*************************************************************************************************************
+ * @name			  SOQLRecipesTest
+ * @author			arieend <arieend@gmail.com>
+ * @created			03 / 10 / 2020
+ * @description Test Learn new technology, patterns, and best practices for solving
+ *              practical problems with code.
+ *
+ * Changes (version)
+ * -----------------------------------------------------------------------------------------------------------
+ * 			    	No.		Date			    Author					      Description
+ * 			    	----	------------	--------------------	----------------------------------------------
+ * @version		1.0		2020-10-03		arieend				      	Changes desription
+ *
+ **************************************************************************************************************/
 @isTest
 private class SOQLRecipesTest {
   private static Account createAccount(Boolean setCountry, String country) {
@@ -48,8 +62,89 @@ private class SOQLRecipesTest {
       FirstName = String.valueOf(Crypto.getRandomInteger())
     );
   }
+  private static User createUser(Boolean ins, String profileName) {
+    Profile standartProfile = [
+      SELECT Id
+      FROM Profile
+      WHERE Name = :profileName
+    ];
+    User contextuser = new User(
+      Alias = 'standt',
+      Email = 'arieend@apexrecipes.com',
+      EmailEncodingKey = 'UTF-8',
+      LastName = 'Testing',
+      LanguageLocaleKey = 'en_US',
+      LocaleSidKey = 'en_US',
+      ProfileId = standartProfile.Id,
+      TimeZoneSidKey = 'America/Los_Angeles',
+      UserName = 'arieend@apexrecipes.com'
+    );
+    if (ins) {
+      insert contextuser;
+    }
+    return contextuser;
+  }
+
   @IsTest
-  static void testSipmleQuerySingleObject() {
+  static void securityEnforcedTestDenies() {
+    /*********************************************************************************************************
+     * @name			  securityEnforcedTest
+     * @author			arieend <arieend@gmail.com>
+     * @created			03 / 10 / 2020
+     * @description	1. Create user account
+     *              2. Assign permission set tu user
+     *              3. Run test with System.runAs with created user
+     **********************************************************************************************************/
+
+    User contextuser = SOQLRecipesTest.createUser(true, 'NO Accounts');
+    Test.startTest();
+    // RunAs the user
+    System.runAs(contextuser) {
+      createAccount(false, '');
+      Boolean didCatchProperException = false;
+      try {
+        List<Account> testAccounts = SOQLRecipes.querySingleObject();
+      } catch (QueryException queryException) {
+        if (queryException.getMessage().contains('Insufficient permissions')) {
+          didCatchProperException = true;
+        }
+      }
+      System.assert(
+        didCatchProperException,
+        'Excpected a user with profile \'No Accounts\' to not be able to query Account'
+      );
+    }
+    Test.stopTest();
+  }
+  @IsTest
+  static void securityEnforcedTestGrantedByPermissionSet() {
+    User contextuser = SOQLRecipesTest.createUser(true, 'NO Accounts');
+    ID permissionSetId = [
+      SELECT ID
+      FROM PermissionSet
+      WHERE Name = 'Proving_With_Security_Enforced_Works'
+      LIMIT 1
+    ]
+    .Id;
+    PermissionSetAssignment psa = new PermissionSetAssignment(
+      PermissionSetId = permissionSetId,
+      AssigneeId = contextuser.ID
+    );
+    insert psa;
+    Test.startTest();
+    System.runAs(contextuser) {
+      createAccount(false, '');
+      List<Account> testAccounts = SOQLRecipes.querySingleObject();
+      System.assertEquals(
+        1,
+        testAccounts.size(),
+        'Excpected to find 1 account'
+      );
+    }
+    Test.stopTest();
+  }
+  @IsTest
+  static void querySingleObjectTest() {
     createAccount(false, '');
     System.assertEquals(
       [SELECT id FROM Account].size(),
@@ -67,7 +162,7 @@ private class SOQLRecipesTest {
     System.assert(testAccounts[0].Name.contains('Awesomeness'));
   }
   @IsTest
-  static void testCountOfLargeDataVolums() {
+  static void queryMassiveNummberOfRecordsReturningCountTest() {
     // create test data
     List<Account> testAccounts = new List<Account>();
     for (Integer x = 0; x <= 1; x++) {
@@ -89,7 +184,7 @@ private class SOQLRecipesTest {
     System.assertEquals(count, 3000, 'Expected found 3k records');
   }
   @IsTest
-  static void testQueryWithFilterNegativeNoMatch() {
+  static void getFilteredListTestNegative() {
     createAccount(false, '');
     System.assertEquals(
       [SELECT id FROM Account].size(),
@@ -107,7 +202,7 @@ private class SOQLRecipesTest {
     );
   }
   @IsTest
-  static void testQueryWithFilterPositive() {
+  static void getFilteredListTestPositive() {
     createAccount(true, 'UK');
     System.assertEquals(
       [SELECT id FROM Account].size(),
@@ -124,7 +219,7 @@ private class SOQLRecipesTest {
     );
   }
   @IsTest
-  static void testComplexFilterOmnibus() {
+  static void getComplexFilteredListTest() {
     // Prepare data
     Map<Account, Boolean> testCase = new Map<Account, Boolean>();
     testCase.put(genAccountWithOptions(true, 'US'), false);
@@ -170,7 +265,7 @@ private class SOQLRecipesTest {
     System.assertEquals(negativeCnt, 2, 'Expected 2 negative results');
   }
   @IsTest
-  static void testLimitClauseMoreThen10Accounts() {
+  static void getSpecificNumberOfResultsTestMore() {
     Integer numOfRecords = 15;
     Integer expectedNumOfRecords = 10;
     createAccounts(true, 'US', numOfRecords);
@@ -195,7 +290,7 @@ private class SOQLRecipesTest {
     );
   }
   @IsTest
-  static void testLimitClauseLessThen10Accounts() {
+  static void getSpecificNumberOfResultsTestLess() {
     Integer numOfRecords = 3;
     Integer expectedNumOfRecords = 3;
     createAccounts(true, 'US', numOfRecords);
@@ -220,7 +315,7 @@ private class SOQLRecipesTest {
     );
   }
   @IsTest
-  static void testDynamicLimitClause() {
+  static void getFirstXResultTest() {
     Integer numOfRecords = 8;
     Integer expectedNumOfRecords = 3;
     createAccounts(true, 'US', numOfRecords);
@@ -245,7 +340,7 @@ private class SOQLRecipesTest {
     );
   }
   @IsTest
-  static void testGetAccountfilterByState() {
+  static void getAccountsInStateTest() {
     Integer numOfRecords = 3;
     Integer expectedNumOfRecords = 3;
     List<Account> toInsert = genXnumberOfAccountWithOptions(true, 'US', 3);
@@ -283,7 +378,7 @@ private class SOQLRecipesTest {
     );
   }
   @IsTest
-  static void testGetRecords11through20() {
+  static void getSecond10AccountTestMore() {
     Integer numOfRecords = 25;
     Integer expectedNumOfRecords = 10;
     createAccounts(true, 'US', numOfRecords);
@@ -307,7 +402,7 @@ private class SOQLRecipesTest {
     );
   }
   @IsTest
-  static void testGetRecords11through15() {
+  static void getSecond10AccountTestLess() {
     Integer numOfRecords = 15;
     Integer expectedNumOfRecords = 5;
     createAccounts(true, 'US', numOfRecords);
@@ -331,7 +426,7 @@ private class SOQLRecipesTest {
     );
   }
   @IsTest
-  static void testGetContactsAndAccounts() {
+  static void getContactsAndAccountsTest() {
     Integer numOfRecords = 3;
     Integer expectedNumOfRecords = 3;
     List<Account> accounts = genXnumberOfAccountWithOptions(
@@ -388,7 +483,7 @@ private class SOQLRecipesTest {
     }
   }
   @IsTest
-  static void testGetAccountInfoThenQueringContact() {
+  static void getParentDetailsForChildTest() {
     Integer numOfRecords = 1;
     Integer expectedNumOfRecords = 1;
     List<Account> accounts = genXnumberOfAccountWithOptions(
@@ -430,7 +525,7 @@ private class SOQLRecipesTest {
     );
   }
   @IsTest
-  static void testGetDetailsFromBothParents() {
+  static void getDetailsFromBothParentsTest() {
     Junction_Demo_1__c jd1 = new Junction_Demo_1__c();
     Junction_Demo_2__c jd2 = new Junction_Demo_2__c();
     insert jd1;

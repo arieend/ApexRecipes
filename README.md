@@ -6,9 +6,11 @@ Following Kevin Poorman's Trailhead live streams.
 
 [Jan 9th, 2020 - CodeLive with Salesforce Developers: Apex Recipes](https://trailhead.salesforce.com/live/videos/a2r3k000001WFQJ/codelive-with-salesforce-developers-apex-recipes/)
 
-[Jan 9th, 2020 - CodeLive with Salesforce Developers](https://trailhead.salesforce.com/live/videos/a2r3k000001WFQs/codelive-with-salesforce-developers/)
+[Jan 16th, 2020 - CodeLive with Salesforce Developers](https://trailhead.salesforce.com/live/videos/a2r3k000001WFQs/codelive-with-salesforce-developers/)
 
-[Jan 27th, 2020 CodeLive with Salesforce Developers: Apex Recipes (Cont.)](https://trailhead.salesforce.com/live/videos/a2r3k000001WFT3/codelive-with-salesforce-developers-apex-recipes-cont)
+[Jan 27th, 2020 - CodeLive with Salesforce Developers: Apex Recipes (Cont.)](https://trailhead.salesforce.com/live/videos/a2r3k000001WFT3/codelive-with-salesforce-developers-apex-recipes-cont)
+
+[Feb 6th, 2020 - CodeLive with Salesforce Developers](https://trailhead.salesforce.com/live/videos/a2r3k000001WFWq/codelive-with-salesforce-developers/)
 
 # Salesforce App
 
