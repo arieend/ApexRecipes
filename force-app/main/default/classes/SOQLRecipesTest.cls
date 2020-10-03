@@ -14,77 +14,6 @@
  **************************************************************************************************************/
 @isTest
 private class SOQLRecipesTest {
-  private static Account createAccount(Boolean setCountry, String country) {
-    Account account = genAccountWithOptions(setCountry, country);
-    insert account;
-    return account;
-  }
-  private static void createAccounts(
-    Boolean setCountry,
-    String country,
-    Integer numberOfAccounts
-  ) {
-    insert genXnumberOfAccountWithOptions(
-      setCountry,
-      country,
-      numberOfAccounts
-    );
-  }
-  private static List<Account> genXnumberOfAccountWithOptions(
-    Boolean setCountry,
-    String country,
-    Integer numberOfAccounts
-  ) {
-    List<Account> acctList = new List<Account>();
-    for (Integer i = 0; i < numberOfAccounts; i++) {
-      acctList.add(genAccountWithOptions(setCountry, country));
-    }
-    return acctList;
-  }
-  private static Account genAccountWithOptions(
-    Boolean setCountry,
-    String country
-  ) {
-    Account acct = new Account(
-      Name = 'The Test Account of Awesomeness' + Crypto.getRandomInteger(),
-      ShippingStreet = '123 Sessame St.',
-      ShippingCity = 'Wehawkin'
-    );
-    if (setCountry) {
-      acct.ShippingCountry = country;
-    }
-    return acct;
-  }
-  private static Contact genContactForAccount(ID acctID) {
-    return new Contact(
-      AccountID = acctID,
-      LastName = 'Spectecular',
-      FirstName = String.valueOf(Crypto.getRandomInteger())
-    );
-  }
-  private static User createUser(Boolean ins, String profileName) {
-    Profile standartProfile = [
-      SELECT Id
-      FROM Profile
-      WHERE Name = :profileName
-    ];
-    User contextuser = new User(
-      Alias = 'standt',
-      Email = 'arieend@apexrecipes.com',
-      EmailEncodingKey = 'UTF-8',
-      LastName = 'Testing',
-      LanguageLocaleKey = 'en_US',
-      LocaleSidKey = 'en_US',
-      ProfileId = standartProfile.Id,
-      TimeZoneSidKey = 'America/Los_Angeles',
-      UserName = 'arieend@apexrecipes.com'
-    );
-    if (ins) {
-      insert contextuser;
-    }
-    return contextuser;
-  }
-
   @IsTest
   static void securityEnforcedTestDenies() {
     /*********************************************************************************************************
@@ -96,11 +25,11 @@ private class SOQLRecipesTest {
      *              3. Run test with System.runAs with created user
      **********************************************************************************************************/
 
-    User contextuser = SOQLRecipesTest.createUser(true, 'NO Accounts');
+    User contextuser = SOQLRecipiesTestHelper.createUser(true, 'NO Accounts');
     Test.startTest();
     // RunAs the user
     System.runAs(contextuser) {
-      createAccount(false, '');
+      SOQLRecipiesTestHelper.createAccount(false, '');
       Boolean didCatchProperException = false;
       try {
         List<Account> testAccounts = SOQLRecipes.querySingleObject();
@@ -118,7 +47,7 @@ private class SOQLRecipesTest {
   }
   @IsTest
   static void securityEnforcedTestGrantedByPermissionSet() {
-    User contextuser = SOQLRecipesTest.createUser(true, 'NO Accounts');
+    User contextuser = SOQLRecipiesTestHelper.createUser(true, 'NO Accounts');
     ID permissionSetId = [
       SELECT ID
       FROM PermissionSet
@@ -133,7 +62,7 @@ private class SOQLRecipesTest {
     insert psa;
     Test.startTest();
     System.runAs(contextuser) {
-      createAccount(false, '');
+      SOQLRecipiesTestHelper.createAccount(false, '');
       List<Account> testAccounts = SOQLRecipes.querySingleObject();
       System.assertEquals(
         1,
@@ -145,7 +74,7 @@ private class SOQLRecipesTest {
   }
   @IsTest
   static void querySingleObjectTest() {
-    createAccount(false, '');
+    SOQLRecipiesTestHelper.createAccount(false, '');
     System.assertEquals(
       [SELECT id FROM Account].size(),
       1,
@@ -167,7 +96,9 @@ private class SOQLRecipesTest {
     List<Account> testAccounts = new List<Account>();
     for (Integer x = 0; x <= 1; x++) {
       for (Integer i = 0; i < 1500; i++) {
-        testAccounts.add(genAccountWithOptions(false, ''));
+        testAccounts.add(
+          SOQLRecipiesTestHelper.genAccountWithOptions(false, '')
+        );
       }
       insert testAccounts;
       testAccounts.clear();
@@ -185,7 +116,7 @@ private class SOQLRecipesTest {
   }
   @IsTest
   static void getFilteredListTestNegative() {
-    createAccount(false, '');
+    SOQLRecipiesTestHelper.createAccount(false, '');
     System.assertEquals(
       [SELECT id FROM Account].size(),
       1,
@@ -203,7 +134,7 @@ private class SOQLRecipesTest {
   }
   @IsTest
   static void getFilteredListTestPositive() {
-    createAccount(true, 'UK');
+    SOQLRecipiesTestHelper.createAccount(true, 'UK');
     System.assertEquals(
       [SELECT id FROM Account].size(),
       1,
@@ -222,12 +153,24 @@ private class SOQLRecipesTest {
   static void getComplexFilteredListTest() {
     // Prepare data
     Map<Account, Boolean> testCase = new Map<Account, Boolean>();
-    testCase.put(genAccountWithOptions(true, 'US'), false);
-    testCase.put(genAccountWithOptions(true, 'CA'), false);
-    Account positiveCase1 = genAccountWithOptions(true, 'US');
+    testCase.put(
+      SOQLRecipiesTestHelper.genAccountWithOptions(true, 'US'),
+      false
+    );
+    testCase.put(
+      SOQLRecipiesTestHelper.genAccountWithOptions(true, 'CA'),
+      false
+    );
+    Account positiveCase1 = SOQLRecipiesTestHelper.genAccountWithOptions(
+      true,
+      'US'
+    );
     positiveCase1.ShippingState = 'Indiana';
     positiveCase1.Industry = 'Fast Food - made whole';
-    Account positiveCase2 = genAccountWithOptions(true, 'US');
+    Account positiveCase2 = SOQLRecipiesTestHelper.genAccountWithOptions(
+      true,
+      'US'
+    );
     positiveCase2.ShippingState = 'Indiana';
     positiveCase2.Industry = 'Slow Food - Made quickly';
     testCase.put(positiveCase1, true);
@@ -268,7 +211,7 @@ private class SOQLRecipesTest {
   static void getSpecificNumberOfResultsTestMore() {
     Integer numOfRecords = 15;
     Integer expectedNumOfRecords = 10;
-    createAccounts(true, 'US', numOfRecords);
+    SOQLRecipiesTestHelper.createAccounts(true, 'US', numOfRecords);
     System.assertEquals(
       [SELECT id FROM Account].size(),
       numOfRecords,
@@ -293,7 +236,7 @@ private class SOQLRecipesTest {
   static void getSpecificNumberOfResultsTestLess() {
     Integer numOfRecords = 3;
     Integer expectedNumOfRecords = 3;
-    createAccounts(true, 'US', numOfRecords);
+    SOQLRecipiesTestHelper.createAccounts(true, 'US', numOfRecords);
     System.assertEquals(
       [SELECT id FROM Account].size(),
       numOfRecords,
@@ -318,7 +261,7 @@ private class SOQLRecipesTest {
   static void getFirstXResultTest() {
     Integer numOfRecords = 8;
     Integer expectedNumOfRecords = 3;
-    createAccounts(true, 'US', numOfRecords);
+    SOQLRecipiesTestHelper.createAccounts(true, 'US', numOfRecords);
     System.assertEquals(
       [SELECT id FROM Account].size(),
       numOfRecords,
@@ -343,7 +286,11 @@ private class SOQLRecipesTest {
   static void getAccountsInStateTest() {
     Integer numOfRecords = 3;
     Integer expectedNumOfRecords = 3;
-    List<Account> toInsert = genXnumberOfAccountWithOptions(true, 'US', 3);
+    List<Account> toInsert = SOQLRecipiesTestHelper.genXnumberOfAccountWithOptions(
+      true,
+      'US',
+      3
+    );
     for (Account acct : toInsert) {
       acct.ShippingState = 'TX';
     }
@@ -381,7 +328,7 @@ private class SOQLRecipesTest {
   static void getSecond10AccountTestMore() {
     Integer numOfRecords = 25;
     Integer expectedNumOfRecords = 10;
-    createAccounts(true, 'US', numOfRecords);
+    SOQLRecipiesTestHelper.createAccounts(true, 'US', numOfRecords);
     System.assertEquals(
       [SELECT id FROM Account].size(),
       numOfRecords,
@@ -405,7 +352,7 @@ private class SOQLRecipesTest {
   static void getSecond10AccountTestLess() {
     Integer numOfRecords = 15;
     Integer expectedNumOfRecords = 5;
-    createAccounts(true, 'US', numOfRecords);
+    SOQLRecipiesTestHelper.createAccounts(true, 'US', numOfRecords);
     System.assertEquals(
       [SELECT id FROM Account].size(),
       numOfRecords,
@@ -429,7 +376,7 @@ private class SOQLRecipesTest {
   static void getContactsAndAccountsTest() {
     Integer numOfRecords = 3;
     Integer expectedNumOfRecords = 3;
-    List<Account> accounts = genXnumberOfAccountWithOptions(
+    List<Account> accounts = SOQLRecipiesTestHelper.genXnumberOfAccountWithOptions(
       true,
       'US',
       numOfRecords
@@ -438,7 +385,7 @@ private class SOQLRecipesTest {
     List<Contact> contacts = new List<Contact>();
     for (Account account : accounts) {
       for (Integer i = 0; i < 5; i++) {
-        contacts.add(genContactForAccount(account.Id));
+        contacts.add(SOQLRecipiesTestHelper.genContactForAccount(account.Id));
       }
     }
     insert contacts;
@@ -486,7 +433,7 @@ private class SOQLRecipesTest {
   static void getParentDetailsForChildTest() {
     Integer numOfRecords = 1;
     Integer expectedNumOfRecords = 1;
-    List<Account> accounts = genXnumberOfAccountWithOptions(
+    List<Account> accounts = SOQLRecipiesTestHelper.genXnumberOfAccountWithOptions(
       true,
       'US',
       numOfRecords
@@ -497,7 +444,7 @@ private class SOQLRecipesTest {
     insert accounts;
     List<Contact> contacts = new List<Contact>();
     for (Account account : accounts) {
-      contacts.add(genContactForAccount(account.Id));
+      contacts.add(SOQLRecipiesTestHelper.genContactForAccount(account.Id));
     }
     insert contacts;
     System.assertEquals(
@@ -553,7 +500,7 @@ private class SOQLRecipesTest {
   }
   @IsTest
   static void getSumOfOpportunitiesTest() {
-    Account account = createAccount(true, 'It');
+    Account account = SOQLRecipiesTestHelper.createAccount(true, 'It');
     List<Opportunity> opps = new List<Opportunity>();
     Integer length = 5;
     for (Integer i = 0; i < length; i++) {
