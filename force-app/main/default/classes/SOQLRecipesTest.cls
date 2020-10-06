@@ -25,7 +25,10 @@ private class SOQLRecipesTest {
      *              3. Run test with System.runAs with created user
      **********************************************************************************************************/
 
-    User contextuser = SOQLRecipiesTestHelper.createUser(true, 'NO Accounts');
+    User contextuser = SOQLRecipiesTestHelper.createUser(
+      true,
+      'HasNoAccessToAccounts'
+    );
     Test.startTest();
     // RunAs the user
     System.runAs(contextuser) {
@@ -40,14 +43,17 @@ private class SOQLRecipesTest {
       }
       System.assert(
         didCatchProperException,
-        'Excpected a user with profile \'No Accounts\' to not be able to query Account'
+        'Excpected a user with profile \'HasNoAccessToAccounts\' to not be able to query Account'
       );
     }
     Test.stopTest();
   }
   @IsTest
   static void securityEnforcedTestGrantedByPermissionSet() {
-    User contextuser = SOQLRecipiesTestHelper.createUser(true, 'NO Accounts');
+    User contextuser = SOQLRecipiesTestHelper.createUser(
+      true,
+      'HasNoAccessToAccounts'
+    );
     ID permissionSetId = [
       SELECT ID
       FROM PermissionSet
