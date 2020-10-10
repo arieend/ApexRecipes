@@ -2,14 +2,15 @@
  * @description       :
  * @author            : arieend@gmail.com
  * @group             :
- * @last modified on  : 10/10/2020
+ * @last modified on  : 11/10/2020
  * @last modified by  : arieend@gmail.com
  * Modifications Log
  * Ver   Date         Author              Modification
  * 1.0   08/10/2020   arieend@gmail.com   Initial Version
  **/
 public with sharing class Can {
-  private static Map<String, Set<sObjectField>> accessable = new Map<String, Set<sObjectField>>();
+  @TestVisible
+  private static Map<String, Map<String, Set<String>>> flsMapByObject = new Map<String, Map<String, Set<String>>>();
   /**
    * @description  Check sObject for CRUD action
    * @author arieend@gmail.com | 08/10/2020
@@ -73,34 +74,72 @@ public with sharing class Can {
     return Can.crud(obj, 'delete');
   }
   /**
-   * @description  Calculate whether or not filed is accessable
+   * @description  Calculate FLS
    * @author arieend@gmail.com | 09/10/2020
    * @param obj - the object inquestion in string form
-   * @param field - filed in question in sObjectField form
+   * @param field - filed in question in String form
    * @return Boolean
    **/
-  public static Boolean fls(String obj, sObjectField field) {
-    return Can.getAccessable(obj).contains(field);
+  public static Boolean fls(String obj, String field, String action) {
+    return Can.flsMemorize(obj, action).contains(field);
+  }
+  /**
+   * @description  Calculate FLS  - accessible
+   * @author arieend@gmail.com | 09/10/2020
+   * @param obj - the object inquestion in string form
+   * @param field - filed in question in String form
+   * @return Boolean
+   **/
+  public static Boolean flsAccessible(String obj, String field) {
+    return Can.fls(obj, field, 'Accessible');
+  }
+  /**
+   * @description  Calculate FLS  - updateable
+   * @author arieend@gmail.com | 09/10/2020
+   * @param obj - the object inquestion in string form
+   * @param field - filed in question in String form
+   * @return Boolean
+   **/
+  public static Boolean flsUpdateable(String obj, String field) {
+    return Can.fls(obj, field, 'Updateable');
   }
   /**
    * @description Memorization (Caching) of all accessable fields for given object
    * @author arieend@gmail.com | 09/10/2020
-   * @param objType
+   * @param obj - the object inquestion in string form
+   * @param actio - Accessible , Updateable
    * @return Set<sObjectField>
    **/
-  public static Set<sObjectField> getAccessable(String objType) {
+  @TestVisible
+  private static Set<String> flsMemorize(String objType, String action) {
+    Map<String, Set<String>> flsMap;
     Schema.DescribeSObjectResult[] descResults;
-    if (!Can.accessable.containsKey(objType)) {
+
+    if (!flsMapByObject.containsKey(action)) {
+      flsMapByObject.put(action, new Map<String, Set<String>>());
+    }
+    flsMap = flsMapByObject.get(action);
+
+    if (!flsMap.containsKey(objType)) {
       descResults = Schema.describeSObjects(new List<String>{ objType });
-      Set<sObjectField> accessableFields = new Set<sObjectField>();
+      Set<String> flsFields = new Set<String>();
       for (SObjectField field : descResults[0].fields.getMap().values()) {
         DescribeFieldResult fieldResult = field.getDescribe();
-        if (fieldResult.isAccessible()) {
-          accessableFields.add(field);
+        switch on action {
+          when 'Accessible' {
+            if (fieldResult.isAccessible()) {
+              flsFields.add(String.valueOf(field));
+            }
+          }
+          when 'Updateable' {
+            if (fieldResult.isUpdateable()) {
+              flsFields.add(String.valueOf(field));
+            }
+          }
         }
       }
-      Can.accessable.put(objType, accessableFields);
+      flsMap.put(objType, flsFields);
     }
-    return Can.accessable.get(objType);
+    return flsMap.get(objType);
   }
 }

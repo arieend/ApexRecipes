@@ -2,7 +2,7 @@
  * @description       :
  * @author            : arieend@gmail.com
  * @group             :
- * @last modified on  : 10/10/2020
+ * @last modified on  : 11/10/2020
  * @last modified by  : arieend@gmail.com
  * Modifications Log
  * Ver   Date         Author              Modification
@@ -72,5 +72,33 @@ public with sharing class CanTest {
       Can.destroy(new Account()),
       'Expect pass that means user can delete account'
     );
+  }
+  @IsTest
+  static void canGetFlsOfAccountTestPositive() {
+    System.assert(
+      Can.flsAccessible('Account', 'Name'),
+      'Expect pass that means the filed is accessable'
+    );
+    System.assert(
+      Can.flsUpdateable('Account', 'Name'),
+      'Expect pass that means the filed is updateable'
+    );
+  }
+  @IsTest
+  static void canGetFlsOfAccountTestNegative() {
+    System.assert(
+      !Can.flsUpdateable('Account', 'Id'),
+      'Expect pass that means the filed is NOT updateable'
+    );
+  }
+  @IsTest
+  static void compareFlsAccessibleVsUpdateable() {
+    Test.startTest();
+    Set<String> flsAccessible = Can.flsMemorize('Account', 'Accessible');
+    Set<String> flsUpdateable = Can.flsMemorize('Account', 'Updateable');
+    Test.stopTest();
+    System.assertNotEquals(flsAccessible, flsUpdateable, 'Expected different');
+    System.assert(flsAccessible.contains('Id'), 'Expected to contain id');
+    System.assert(!flsUpdateable.contains('Id'), 'Expected not to contain id');
   }
 }
