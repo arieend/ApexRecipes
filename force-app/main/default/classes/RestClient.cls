@@ -2,7 +2,7 @@
  * @description       : REST API Client
  * @author            : arieend@gmail.com
  * @group             :
- * @last modified on  : 11/10/2020
+ * @last modified on  : 12/10/2020
  * @last modified by  : arieend@gmail.com
  * Modifications Log
  * Ver   Date         Author              Modification
@@ -60,6 +60,7 @@ public with sharing virtual class RestClient {
       this.body = body;
       this.url = url;
       this.method = method;
+      this.responseBody = e.getMessage();
     }
   }
   public RestClient(String url, HttpVerb method) {
